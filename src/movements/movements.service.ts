@@ -275,7 +275,7 @@ export class MovementsService {
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 10, 1)) AS "Oct",
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 11, 1)) AS "Nov",
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 12, 1)) AS "Dic",
-        SUM(m.charge) AS "Total general"
+        SUM(m.charge) AS "Total"
       FROM movements m
       JOIN accounting_accounts aa ON m.accounting_account_id = aa.accounting_account_id
       WHERE EXTRACT(YEAR FROM m."date") = $1 AND aa.company_id = $2
@@ -284,7 +284,7 @@ export class MovementsService {
       UNION ALL
 
       SELECT
-        'Total general',
+        'Total',
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 1, 1)),
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 2, 1)),
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 3, 1)),
@@ -327,7 +327,7 @@ export class MovementsService {
       months,
       data: result.map((row) => ({
         concept: row.concept,
-        total_general: Number(row['Total general']) || 0,
+        total_general: Number(row['Total']) || 0,
         ene: Number(row['Ene']) || 0,
         feb: Number(row['Feb']) || 0,
         mar: Number(row['Mar']) || 0,
@@ -394,7 +394,7 @@ export class MovementsService {
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 10, 1)) AS "Oct",
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 11, 1)) AS "Nov",
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 12, 1)) AS "Dic",
-        SUM(m.charge) AS "Total general"
+        SUM(m.charge) AS "Total"
       FROM movements m
       JOIN accounting_accounts aa ON m.accounting_account_id = aa.accounting_account_id
       WHERE EXTRACT(YEAR FROM m."date") = $1
@@ -405,7 +405,7 @@ export class MovementsService {
       UNION ALL
 
       SELECT
-        'Total general',
+        'Total',
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 1, 1)),
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 2, 1)),
         SUM(m.charge) FILTER (WHERE date_trunc('month', m."date") = MAKE_DATE($1, 3, 1)),
@@ -434,7 +434,7 @@ export class MovementsService {
 
       const parsedData = rows.map((row) => ({
         concept: row.concept,
-        total_general: Number(row['Total general']) || 0,
+        total_general: Number(row['Total']) || 0,
         ene: Number(row['Ene']) || 0,
         feb: Number(row['Feb']) || 0,
         mar: Number(row['Mar']) || 0,
