@@ -11,10 +11,15 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT') || 3000;
 
+  const envieroment = configService.get<string>('NODE_ENV') || 'development';
+
+  const frontendURL = configService.get<string>('FRONTEND_URL') || '*';
+
   app.enableCors({
-    origin: [
-      configService.get<string>('FRONTEND_URL') || 'http://localhost:5173',
-    ],
+    origin: envieroment === 'production' ? frontendURL : '*', // Cambia esto según tu dominio de producción
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   app.useGlobalPipes(
@@ -26,30 +31,7 @@ async function bootstrap() {
     }),
   );
 
-  // "ONE_DARK" es el que deje por defecto para la imagen oscura
   const choosedTheme: SwaggerThemeNameEnum = SwaggerThemeNameEnum.ONE_DARK;
-
-  /*const WHITE_THEMES: SwaggerThemeNameEnum[] = [
-    SwaggerThemeNameEnum.CLASSIC,
-    SwaggerThemeNameEnum.FEELING_BLUE,
-    SwaggerThemeNameEnum.FLATTOP,
-    SwaggerThemeNameEnum.MATERIAL,
-    SwaggerThemeNameEnum.MONOKAI,
-    SwaggerThemeNameEnum.MUTED,
-    SwaggerThemeNameEnum.NEWSPAPER,
-    SwaggerThemeNameEnum.OUTLINE,
-  ];*/
-
-  /*
-  const DARK_THEMES: SwaggerThemeNameEnum[] = [
-    SwaggerThemeNameEnum.DARK,
-    SwaggerThemeNameEnum.DARK_MONOKAI,
-    SwaggerThemeNameEnum.DRACULA,
-    SwaggerThemeNameEnum.GRUVBOX,
-    SwaggerThemeNameEnum.NORD_DARK,
-    SwaggerThemeNameEnum.ONE_DARK,
-  ];
-  */
 
   const config = new DocumentBuilder()
     .setTitle('API procesador de CONTPAQi industria porcina')
@@ -65,9 +47,18 @@ async function bootstrap() {
 
   SwaggerModule.setup('api', app, document, {
     customCss: darkTheme,
-  }); // http://localhost:<PORT>/api
+  });
 
   await app.listen(port);
-  console.log(`🚀 Server running at http://localhost:${port}`);
+  if (envieroment === 'development') {
+    console.log(`🚀 Server running at http://localhost:${port}`);
+    console.log(`Documentation http://localhost:${port}/api`);
+    const serverAddress = await app.getUrl();
+    console.log(`🚀 Server running at ${serverAddress}`);
+  } else if (envieroment === 'production') {
+    // Generame la url del servidor
+    const serverAddress = await app.getUrl();
+    console.log(`🚀 Server running at ${serverAddress}`);
+  }
 }
 bootstrap();

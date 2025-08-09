@@ -23,8 +23,15 @@ export const typeOrmConfigAsync: TypeOrmModuleAsyncOptions = {
       database: dbConfig.name,
     };
 
+    const otherProperties = {
+      frontendURL: configService.get<string>('FRONTEND_URL') || '*',
+      envieroment: configService.get<string>('NODE_ENV') || 'development',
+      port: configService.get<number>('PORT') || 3000,
+    };
+
     setTimeout(() => {
       console.log(JSON.stringify(databaseProperties, null, 2));
+      console.log(otherProperties);
     }, 2000);
 
     const result: TypeOrmModuleOptions = {
