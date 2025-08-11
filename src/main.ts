@@ -13,10 +13,11 @@ async function bootstrap() {
 
   const envieroment = configService.get<string>('NODE_ENV') || 'development';
 
-  const frontendURL = configService.get<string>('FRONTEND_URL') || '*';
+  // const frontendURL = configService.get<string>('FRONTEND_URL') || '*';
 
   app.enableCors({
-    origin: envieroment === 'production' ? frontendURL : '*', // Cambia esto según tu dominio de producción
+    // origin: envieroment === 'production' ? frontendURL : '*', // Cambia esto según tu dominio de producción
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     preflightContinue: false,
     optionsSuccessStatus: 204,
