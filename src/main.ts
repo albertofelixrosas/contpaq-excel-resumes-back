@@ -5,36 +5,43 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 import { Request, Response, NextFunction } from 'express';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  const port = configService.get<number>('PORT') || 3000;
-  const environment = configService.get<string>('NODE_ENV') || 'development';
-  const frontendURL = configService.get<string>('FRONTEND_URL') || '*';
+  const port = configService.get<number>('app.port') || 3000;  // Accede al valor anidado
+  const environment = configService.get<string>('app.environment');
+  const frontendURL = configService.get<string>('app.frontendUrl'); // Nota: frontendUrl (camelCase)
 
-  // ✅ Configuración CORS según entorno
-  if (environment === 'development') {
-    app.enableCors({
-      origin: '*',
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      preflightContinue: false,
-      optionsSuccessStatus: 204,
-    });
-  } else {
-    // Forzar CORS manualmente en producción
+  const corsOptions = {
+    origin: environment === 'development' ? '*' : frontendURL,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+  };
+
+  app.enableCors(corsOptions);
+
+  app.use(helmet());
+
+  // Middleware adicional para producción (opcional pero recomendado)
+  if (environment === 'production') {
     app.use((req: Request, res: Response, next: NextFunction) => {
-      res.header('Access-Control-Allow-Origin', frontendURL);
-      res.header(
-        'Access-Control-Allow-Methods',
-        'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      );
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-      res.header('Access-Control-Allow-Credentials', 'true');
-      if (req.method === 'OPTIONS') {
-        return res.sendStatus(204);
+      const allowedOrigins = [frontendURL];
+      const origin = req.headers.origin;
+
+      if (origin && allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
       }
+
+      // Headers adicionales de seguridad
+      res.header('X-Content-Type-Options', 'nosniff');
+      res.header('X-Frame-Options', 'DENY');
+      res.header('X-XSS-Protection', '1; mode=block');
       next();
     });
   }

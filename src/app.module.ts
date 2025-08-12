@@ -16,7 +16,8 @@ import { ConceptsModule } from './concepts/concepts.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+      expandVariables: true,
+      envFilePath: getEnvFiles(),
       load: [databaseConfig],
       validationSchema: databaseValidationSchema,
     }),
@@ -31,4 +32,14 @@ import { ConceptsModule } from './concepts/concepts.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
+
+// Función auxiliar para determinar archivos .env
+function getEnvFiles(): string[] {
+  const env = process.env.NODE_ENV || 'development';
+  return [
+    `.env.${env}.local`,  // .env.development.local, .env.production.local, etc.
+    `.env.${env}`,        // .env.development, .env.production, etc.
+    '.env'                // Fallback general
+  ].filter(Boolean);
+}

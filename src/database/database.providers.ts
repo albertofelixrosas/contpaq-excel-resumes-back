@@ -1,53 +1,45 @@
-import { ConfigService } from '@nestjs/config';
-import {
-  TypeOrmModuleAsyncOptions,
-  TypeOrmModuleOptions,
-} from '@nestjs/typeorm';
-import { DatabaseConfig } from './types/DatabaseConfig';
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { TypeOrmModuleAsyncOptions, TypeOrmModuleOptions } from "@nestjs/typeorm";
 
 export const typeOrmConfigAsync: TypeOrmModuleAsyncOptions = {
+  imports: [ConfigModule],
   inject: [ConfigService],
   useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
-    const dbConfig = configService.get<DatabaseConfig>('database');
+    const dbConfig = configService.get('database');
+    const isProduction = configService.get('app.environment') === 'production';
 
-    if (!dbConfig) {
-      throw new Error('Database configuration not found');
+    if (isProduction) {
+      return {
+        type: 'postgres',
+        host: dbConfig.host,
+        port: dbConfig.port,
+        username: dbConfig.username,
+        password: dbConfig.password,
+        database: dbConfig.name,
+        entities: [__dirname + '/../**/*.entity.{ts,js}'],
+        synchronize: false, // false en producción
+        migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+        migrationsRun: true, // true solo en producción
+        logging: false, // false en producción
+        ssl: {
+          rejectUnauthorized: false
+        }
+      };
     }
 
-    const databaseProperties = {
-      type: dbConfig.type,
-      host: dbConfig.host,
-      port: dbConfig.port,
-      username: dbConfig.username,
-      password: dbConfig.password,
-      database: dbConfig.name,
-    };
-
-    const otherProperties = {
-      frontendURL: configService.get<string>('FRONTEND_URL') || '*',
-      envieroment: configService.get<string>('NODE_ENV') || 'development',
-      port: configService.get<number>('PORT') || 3000,
-    };
-
-    setTimeout(() => {
-      console.log(JSON.stringify(databaseProperties, null, 2));
-      console.log(otherProperties);
-    }, 2000);
-
-    const result: TypeOrmModuleOptions = {
-      type: dbConfig.type,
+    // Suponiendo que es desarrollo local
+    return {
+      type: 'postgres',
       host: dbConfig.host,
       port: dbConfig.port,
       username: dbConfig.username,
       password: dbConfig.password,
       database: dbConfig.name,
       entities: [__dirname + '/../**/*.entity.{ts,js}'],
-      synchronize: true, // mejor usar migraciones en prod
+      synchronize: true, // false en producción
       migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-      migrationsRun: true,
-      logging: false, // imprime que cosas suceden en cuanto a sentencias sql en terminal
+      migrationsRun: false, // true solo en producción
+      logging: true, // false en producción
     };
-
-    return result;
   },
 };
