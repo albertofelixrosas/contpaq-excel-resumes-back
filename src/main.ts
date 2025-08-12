@@ -29,22 +29,21 @@ async function bootstrap() {
   app.use(helmet());
 
   // Middleware adicional para producción (opcional pero recomendado)
-  if (environment === 'production') {
-    app.use((req: Request, res: Response, next: NextFunction) => {
-      const allowedOrigins = [frontendURL];
-      const origin = req.headers.origin;
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const allowedOrigins = [frontendURL];
+    const origin = req.headers.origin;
 
-      if (origin && allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-      }
+    if (environment === 'production' && origin && allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
 
-      // Headers adicionales de seguridad
-      res.header('X-Content-Type-Options', 'nosniff');
-      res.header('X-Frame-Options', 'DENY');
-      res.header('X-XSS-Protection', '1; mode=block');
-      next();
-    });
-  }
+    // Headers adicionales de seguridad
+    res.header('X-Content-Type-Options', 'nosniff');
+    res.header('X-Frame-Options', 'DENY');
+    res.header('X-XSS-Protection', '1; mode=block');
+    next();
+  });
+
 
   app.useGlobalPipes(
     new ValidationPipe({
