@@ -47,6 +47,15 @@ export class MovementFilterDto {
   @IsNotEmpty()
   supplier?: string;
 
+  @ApiPropertyOptional({
+    description: 'Filtro para separar gastos generales de aparceria',
+    examples: ['GG', 'APK', 'ALL'],
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  segment_type?: 'ALL' | 'APK' | 'GG';
+
   @ApiPropertyOptional({ description: 'Página' })
   @IsOptional()
   @Type(() => Number)

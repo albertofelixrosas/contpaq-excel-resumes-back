@@ -1,5 +1,4 @@
 export default () => {
-  console.log({ env: process.env });
   return {
     database: {
       type: 'postgres',

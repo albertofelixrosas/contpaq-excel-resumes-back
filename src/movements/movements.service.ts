@@ -70,6 +70,7 @@ export class MovementsService {
       end_date,
       page,
       limit,
+      segment_type, // Aquí esta el filtro, que es de este tipo -> 'ALL' | 'GG' | 'APK'
     } = filter;
 
     const qb = this.repo
@@ -106,8 +107,23 @@ export class MovementsService {
       });
     }
 
+    if (segment_id && segment_type && segment_type !== 'ALL') {
+      throw new BadRequestException(
+        'No puedes filtrar por segment_id y segment_type al mismo tiempo',
+      );
+    }
+
     if (segment_id) {
       qb.andWhere('s.segment_id = :segment_id', { segment_id });
+    }
+
+    if (segment_type && segment_type !== 'ALL') {
+      if (segment_type === 'GG') {
+        qb.andWhere('s.code ILIKE :segmentType', { segmentType: '%gg%' });
+      }
+      if (segment_type === 'APK') {
+        qb.andWhere('s.code ILIKE :segmentType', { segmentType: '%apk%' });
+      }
     }
 
     if (concept) {
